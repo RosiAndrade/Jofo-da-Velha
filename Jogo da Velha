@@ -1,0 +1,183 @@
+//Rosilaine
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo da Velha - Jogue contra o Computador</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+      margin: 0;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 10px;
+      justify-content: center;
+    }
+    .box {
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: white;
+      border: 2px solid #000;
+      font-size: 2rem;
+      cursor: pointer;
+    }
+    .box.disabled {
+      pointer-events: none;
+      background-color: #f4f4f4;
+    }
+    .message {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    .reset-btn {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    .reset-btn:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="box" id="0"></div>
+    <div class="box" id="1"></div>
+    <div class="box" id="2"></div>
+    <div class="box" id="3"></div>
+    <div class="box" id="4"></div>
+    <div class="box" id="5"></div>
+    <div class="box" id="6"></div>
+    <div class="box" id="7"></div>
+    <div class="box" id="8"></div>
+  </div>
+  <div class="message" id="message"></div>
+  <button class="reset-btn" onclick="resetGame()">Reiniciar Jogo</button>
+
+  <script>
+    const player = 'X';  // Jogador humano
+    const computer = 'O'; // Computador
+    let board = ['', '', '', '', '', '', '', '', '']; // Representação do tabuleiro
+    let currentPlayer = player;
+    let gameOver = false;
+
+    const boxes = document.querySelectorAll('.box');
+    const messageDiv = document.getElementById('message');
+
+    // Função para verificar o vencedor
+    function checkWinner() {
+      const winPatterns = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+      ];
+
+      for (let pattern of winPatterns) {
+        const [a, b, c] = pattern;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          gameOver = true;
+          return board[a];
+        }
+      }
+
+      if (board.every(cell => cell !== '')) {
+        gameOver = true;
+        return 'Empate';
+      }
+
+      return null;
+    }
+
+    // Função que faz o computador jogar
+    function computerMove() {
+      if (gameOver) return;
+
+      let emptyCells = [];
+      board.forEach((cell, index) => {
+        if (cell === '') emptyCells.push(index);
+      });
+
+      const randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      board[randomIndex] = computer;
+      boxes[randomIndex].textContent = computer;
+      boxes[randomIndex].classList.add('disabled');
+
+      currentPlayer = player;
+
+      const winner = checkWinner();
+      if (winner) {
+        if (winner === 'Empate') {
+          messageDiv.textContent = 'É um empate!';
+        } else {
+          messageDiv.textContent = `O vencedor é ${winner}!`;
+        }
+      }
+    }
+
+    // Função para o jogador fazer a jogada
+    function playerMove(event) {
+      if (gameOver) return;
+
+      const cellId = event.target.id;
+      if (board[cellId] === '') {
+        board[cellId] = player;
+        event.target.textContent = player;
+        event.target.classList.add('disabled');
+        
+        const winner = checkWinner();
+        if (winner) {
+          if (winner === 'Empate') {
+            messageDiv.textContent = 'É um empate!';
+          } else {
+            messageDiv.textContent = `O vencedor é ${winner}!`;
+          }
+        } else {
+          currentPlayer = computer;
+          setTimeout(computerMove, 500); // Computador joga após 500ms
+        }
+      }
+    }
+
+    // Resetar o jogo
+    function resetGame() {
+      board = ['', '', '', '', '', '', '', '', ''];
+      currentPlayer = player;
+      gameOver = false;
+      boxes.forEach(box => {
+        box.textContent = '';
+        box.classList.remove('disabled');
+      });
+      messageDiv.textContent = 'Sua vez!';
+    }
+
+    // Adicionando eventos de clique nas caixas
+    boxes.forEach(box => {
+      box.addEventListener('click', playerMove);
+    });
+
+    messageDiv.textContent = 'Sua vez!';
+  </script>
+</body>
+</html>
